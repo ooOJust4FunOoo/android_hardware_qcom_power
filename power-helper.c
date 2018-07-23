@@ -306,28 +306,6 @@ static void process_video_encode_hint(void *metadata)
     }
 }
 
-
-static void touch_boost()
-{
-    int rc;
-    pid_t client;
-    char data[MAX_LENGTH];
-
-    if (client_sockfd < 0) {
-        ALOGE("%s: boost socket not created", __func__);
-        return;
-    }
-
-    client = getpid();
-
-    snprintf(data, MAX_LENGTH, "1:%d", client);
-    rc = sendto(client_sockfd, data, strlen(data), 0,
-        (const struct sockaddr *)&client_addr, sizeof(struct sockaddr_un));
-    if (rc < 0) {
-        ALOGE("%s: failed to send: %s", __func__, strerror(errno));
-    }
-}
-
 void power_set_interactive(int on)
 {
     if (last_state == -1) {
@@ -342,7 +320,6 @@ void power_set_interactive(int on)
     ALOGV("%s %s", __func__, (on ? "ON" : "OFF"));
     if (on) {
         sync_thread(0);
-        touch_boost();
     } else {
         sync_thread(1);
     }
@@ -356,7 +333,6 @@ void power_hint(power_hint_t hint, void *data)
         case POWER_HINT_INTERACTION:
         case POWER_HINT_LAUNCH:
             ALOGV("POWER_HINT_INTERACTION");
-            touch_boost();
             break;
 #if 0
         case POWER_HINT_VSYNC:
